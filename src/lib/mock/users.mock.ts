@@ -11,6 +11,10 @@ export const mockCurrentUser: User = {
   xpToNextLevel: 6000,
   title: 'Cobblestone Wanderer',
   joinedAt: '2026-01-20T10:00:00Z',
+  role: 'USER',
+  status: 'ACTIVE',
+  questsDone: 28,
+  streakDays: 6,
 };
 
 export const mockUserStats: UserStats = {

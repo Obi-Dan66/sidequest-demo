@@ -7,16 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { mockCurrentUser } from '@/lib/mock/users.mock';
+import { useLogin } from '@/features/auth/hooks/useLogin';
 import { ROUTES } from '@/config/routes';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('demo@sidequest.app');
-  const [password, setPassword] = useState('demo1234');
-  const [submitting, setSubmitting] = useState(false);
-  const { signIn } = useAuth();
+  const [email, setEmail] = useState('wanderer@prague.cz');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const login = useLogin();
+  const submitting = login.isPending;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -24,19 +23,14 @@ const LoginPage = () => {
       toast.error('Email and password are required');
       return;
     }
-    setSubmitting(true);
-    await new Promise<void>((resolve) => setTimeout(resolve, 600));
-    signIn(
-      {
-        ...mockCurrentUser,
-        email,
-        username: email.split('@')[0] || mockCurrentUser.username,
-      },
-      { accessToken: 'demo-token' },
-    );
-    toast.success('Welcome back, explorer!', { description: '+10 XP login bonus.' });
-    setSubmitting(false);
-    navigate(ROUTES.explore, { replace: true });
+    try {
+      await login.mutateAsync({ email, password });
+      toast.success('Welcome back, explorer!');
+      navigate(ROUTES.explore, { replace: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Sign-in failed';
+      toast.error('Sign-in failed', { description: message });
+    }
   };
 
   return (
@@ -82,9 +76,6 @@ const LoginPage = () => {
               <LogIn className="size-4" />
               {submitting ? 'Signing in…' : 'Sign in'}
             </Button>
-            <p className="text-center text-xs text-muted-foreground">
-              Demo: <span className="font-mono">demo@sidequest.app</span> · any password
-            </p>
             <p className="text-center text-sm text-muted-foreground">
               New here?{' '}
               <Link to={ROUTES.auth.register} className="font-medium text-primary hover:underline">

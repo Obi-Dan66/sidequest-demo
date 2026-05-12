@@ -1,28 +1,26 @@
-import { api } from '@/services/api/client';
-import { type AuthSession, type User } from '@/types/user';
-
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  user: User;
-  session: AuthSession;
-}
+import { http } from '@/services/api';
+import { type AuthSessionDto, type LoginDto, type RegisterDto, type UserDto } from '@/types/dto';
 
 export const authApi = {
-  async login(payload: LoginPayload): Promise<LoginResponse> {
-    const response = await api.post<LoginResponse>('/auth/login', payload);
-    return response.data;
+  register(payload: RegisterDto): Promise<AuthSessionDto> {
+    return http.post<AuthSessionDto, RegisterDto>('/auth/register', payload);
   },
 
-  async me(): Promise<User> {
-    const response = await api.get<User>('/auth/me');
-    return response.data;
+  login(payload: LoginDto): Promise<AuthSessionDto> {
+    return http.post<AuthSessionDto, LoginDto>('/auth/login', payload);
   },
 
-  async logout(): Promise<void> {
-    await api.post('/auth/logout');
+  refresh(refreshToken: string): Promise<AuthSessionDto> {
+    return http.post<AuthSessionDto, { refreshToken: string }>('/auth/refresh', {
+      refreshToken,
+    });
+  },
+
+  me(): Promise<UserDto> {
+    return http.get<UserDto>('/auth/me');
+  },
+
+  logout(): Promise<void> {
+    return http.postVoid('/auth/logout');
   },
 };

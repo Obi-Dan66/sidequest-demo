@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { Bell, Search } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
-import { BackendStatus } from '@/components/common/BackendStatus';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LevelBadge } from '@/components/gamification/LevelBadge';
@@ -20,7 +19,6 @@ export const TopBar = () => {
         </Link>
 
         <div className="ml-auto flex items-center gap-1.5">
-          <BackendStatus className="mr-1" />
           <Button variant="ghost" size="icon" aria-label="Search">
             <Search className="size-4" />
           </Button>

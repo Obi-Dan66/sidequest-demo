@@ -7,14 +7,18 @@ import { QuestCard } from '@/components/quests/QuestCard';
 import { QuestCardSkeleton } from '@/components/quests/QuestCardSkeleton';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { EmptyState } from '@/components/common/EmptyState';
-import { useMockQuests } from '@/features/quests/hooks/useMockQuests';
+import { useQuests } from '@/features/quests/hooks/useQuests';
 import { type QuestCategory } from '@/types/quest';
 
 const QuestsPage = () => {
   const [category, setCategory] = useState<QuestCategory | 'all'>('all');
   const [search, setSearch] = useState('');
 
-  const { data: quests = [], isLoading } = useMockQuests({ category, search });
+  const { data, isLoading } = useQuests({
+    categorySlug: category === 'all' ? undefined : category,
+    search: search.trim() || undefined,
+  });
+  const quests = data?.quests ?? [];
 
   const inProgress = quests.filter((q) => q.status === 'in_progress');
   const available = quests.filter((q) => q.status !== 'in_progress');

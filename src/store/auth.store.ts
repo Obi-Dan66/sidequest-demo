@@ -8,6 +8,8 @@ interface AuthState {
   isHydrated: boolean;
   setUser: (user: User | null) => void;
   setSession: (session: AuthSession | null) => void;
+  /** Update only the access token (used by the refresh-token flow). */
+  setAccessToken: (accessToken: string) => void;
   signIn: (user: User, session: AuthSession) => void;
   clear: () => void;
 }
@@ -20,6 +22,8 @@ export const useAuthStore = create<AuthState>()(
       isHydrated: false,
       setUser: (user) => set({ user }),
       setSession: (session) => set({ session }),
+      setAccessToken: (accessToken) =>
+        set((state) => (state.session ? { session: { ...state.session, accessToken } } : state)),
       signIn: (user, session) => set({ user, session }),
       clear: () => set({ user: null, session: null }),
     }),

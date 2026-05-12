@@ -1,6 +1,9 @@
 import axios, { type AxiosInstance } from 'axios';
 import { env } from '@/config/env';
-import { attachAuthHeader } from '@/services/api/interceptors/auth.interceptor';
+import {
+  attachAuthHeader,
+  installRefreshTokenInterceptor,
+} from '@/services/api/interceptors/auth.interceptor';
 import { normalizeError } from '@/services/api/interceptors/error.interceptor';
 
 export interface ApiClientOptions {
@@ -14,9 +17,10 @@ export interface ApiClientOptions {
  *  - baseURL pulled from env (single switch for local/staging/prod)
  *  - JSON headers
  *  - withCredentials (cookies) controlled by env
- *  - request interceptor that attaches the bearer token if available
+ *  - request interceptor that attaches the bearer access token
+ *  - response interceptor that transparently refreshes a stale access token
+ *    using the refresh token and retries the original request
  *  - response interceptor that normalizes errors into `ApiError`
- *    and reacts to 401 by clearing the auth session
  */
 export const createApiClient = (options: ApiClientOptions = {}): AxiosInstance => {
   const instance = axios.create({
@@ -30,6 +34,7 @@ export const createApiClient = (options: ApiClientOptions = {}): AxiosInstance =
   });
 
   instance.interceptors.request.use(attachAuthHeader);
+  installRefreshTokenInterceptor(instance);
   instance.interceptors.response.use((response) => response, normalizeError);
 
   return instance;

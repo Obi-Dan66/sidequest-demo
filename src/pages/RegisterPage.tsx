@@ -7,17 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { mockCurrentUser } from '@/lib/mock/users.mock';
+import { useRegister } from '@/features/auth/hooks/useRegister';
 import { ROUTES } from '@/config/routes';
 
 const RegisterPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const { signIn } = useAuth();
   const navigate = useNavigate();
+  const register = useRegister();
+  const submitting = register.isPending;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -25,26 +24,16 @@ const RegisterPage = () => {
       toast.error('Please fill in every field');
       return;
     }
-    setSubmitting(true);
-    await new Promise<void>((resolve) => setTimeout(resolve, 700));
-    signIn(
-      {
-        ...mockCurrentUser,
-        id: 'new-user',
-        username,
-        email,
-        level: 1,
-        xp: 50,
-        xpToNextLevel: 250,
-        title: 'Curious Newcomer',
-      },
-      { accessToken: 'demo-token' },
-    );
-    toast.success(`Welcome to SideQuest, ${username}!`, {
-      description: '+50 XP for joining. Sir Pip is preparing your first quest.',
-    });
-    setSubmitting(false);
-    navigate(ROUTES.explore, { replace: true });
+    try {
+      await register.mutateAsync({ email, username, password });
+      toast.success(`Welcome to SideQuest, ${username}!`, {
+        description: '+50 XP for joining. Sir Pip is preparing your first quest.',
+      });
+      navigate(ROUTES.explore, { replace: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Sign-up failed';
+      toast.error('Sign-up failed', { description: message });
+    }
   };
 
   return (

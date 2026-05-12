@@ -15,24 +15,43 @@ export const queryClient = new QueryClient({
 });
 
 export const queryKeys = {
-  health: {
-    check: ['health', 'check'] as const,
-  },
   auth: {
     me: ['auth', 'me'] as const,
   },
+  users: {
+    list: (query?: object) => ['users', 'list', query ?? {}] as const,
+    detail: (id: string) => ['users', 'detail', id] as const,
+    myStats: ['users', 'me', 'stats'] as const,
+    stats: (id: string) => ['users', id, 'stats'] as const,
+  },
   quests: {
     all: ['quests'] as const,
-    list: (filters?: object) => ['quests', 'list', filters ?? {}] as const,
+    list: (query?: object) => ['quests', 'list', query ?? {}] as const,
+    nearby: (query?: object) => ['quests', 'nearby', query ?? {}] as const,
     detail: (id: string) => ['quests', 'detail', id] as const,
   },
-  places: {
-    all: ['places'] as const,
-    nearby: (lat: number, lng: number, radius: number) =>
-      ['places', 'nearby', { lat, lng, radius }] as const,
+  questCategories: {
+    list: ['quest-categories', 'list'] as const,
+    detail: (slug: string) => ['quest-categories', 'detail', slug] as const,
   },
   achievements: {
-    all: ['achievements'] as const,
-    user: (userId: string) => ['achievements', 'user', userId] as const,
+    all: ['achievements', 'all'] as const,
+    mine: ['achievements', 'mine'] as const,
+  },
+  map: {
+    pins: (query?: object) => ['map', 'pins', query ?? {}] as const,
+  },
+  friendships: {
+    mine: (query?: object) => ['friendships', 'mine', query ?? {}] as const,
+    friends: ['friendships', 'friends'] as const,
+    pending: ['friendships', 'pending'] as const,
+    activity: (query?: object) => ['friendships', 'activity', query ?? {}] as const,
+  },
+  businesses: {
+    list: (query?: object) => ['businesses', 'list', query ?? {}] as const,
+    detail: (id: string) => ['businesses', 'detail', id] as const,
+  },
+  notifications: {
+    list: (query?: object) => ['notifications', 'list', query ?? {}] as const,
   },
 };

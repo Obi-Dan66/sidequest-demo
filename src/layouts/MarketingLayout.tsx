@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { Logo } from '@/components/common/Logo';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
-import { BackendStatus } from '@/components/common/BackendStatus';
 import { Button } from '@/components/ui/button';
 import { PageLoader } from '@/components/common/PageLoader';
 import { ROUTES } from '@/config/routes';
@@ -54,7 +53,6 @@ export const MarketingLayout = () => {
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
-            <BackendStatus />
             <ThemeToggle />
             {isAuthenticated ? (
               <Button asChild size="sm" variant="gradient">
