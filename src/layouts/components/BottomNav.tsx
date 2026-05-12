@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { Compass, Map, Swords, Trophy, User } from 'lucide-react';
+import { Map, Swords, Trophy, User, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ROUTES } from '@/config/routes';
 
 const items = [
-  { to: ROUTES.home, label: 'Home', icon: Compass },
   { to: ROUTES.explore, label: 'Explore', icon: Map },
   { to: ROUTES.quests, label: 'Quests', icon: Swords },
+  { to: ROUTES.friends, label: 'Friends', icon: Users },
   { to: ROUTES.achievements, label: 'Trophies', icon: Trophy },
   { to: ROUTES.profile, label: 'Me', icon: User },
 ];
@@ -22,7 +22,6 @@ export const BottomNav = () => {
           <li key={to} className="flex-1">
             <NavLink
               to={to}
-              end={to === ROUTES.home}
               className={({ isActive }) =>
                 cn(
                   'flex h-full flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-medium transition-colors',

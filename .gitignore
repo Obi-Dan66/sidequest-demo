@@ -19,6 +19,10 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Lockfiles from other package managers
+package-lock.json
+pnpm-lock.yaml
+
 coverage
 .cache
 .turbo

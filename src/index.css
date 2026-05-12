@@ -131,6 +131,13 @@
   .safe-top {
     padding-top: max(env(safe-area-inset-top), 0.5rem);
   }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 }
 
 /* Leaflet overrides — we'll only load this CSS if Leaflet is mounted. */

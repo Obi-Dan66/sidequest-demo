@@ -3,8 +3,8 @@ import { MapContainer as LeafletContainer, TileLayer, Marker, Popup } from 'reac
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { type MapContainerProps } from '@/components/map/MapContainer';
+import { createQuestPinIcon } from '@/components/map/MapPin';
 
-// Vite + Leaflet: default icon URLs need to be re-pointed. Done once.
 const ensureDefaultIconConfigured = () => {
   Reflect.deleteProperty(L.Icon.Default.prototype, '_getIconUrl');
   L.Icon.Default.mergeOptions({
@@ -37,17 +37,23 @@ export const LeafletMap = ({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      {markers.map((marker) => (
-        <Marker
-          key={marker.id}
-          position={[marker.position.lat, marker.position.lng]}
-          eventHandlers={{
-            click: () => onMarkerClick?.(marker.id),
-          }}
-        >
-          {marker.popup && <Popup>{marker.popup}</Popup>}
-        </Marker>
-      ))}
+      {markers.map((marker) => {
+        const icon = marker.category
+          ? createQuestPinIcon({ category: marker.category, emphasized: marker.emphasized })
+          : undefined;
+        return (
+          <Marker
+            key={marker.id}
+            position={[marker.position.lat, marker.position.lng]}
+            icon={icon}
+            eventHandlers={{
+              click: () => onMarkerClick?.(marker.id),
+            }}
+          >
+            {marker.popup && <Popup>{marker.popup}</Popup>}
+          </Marker>
+        );
+      })}
     </LeafletContainer>
   );
 };

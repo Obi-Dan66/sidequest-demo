@@ -9,9 +9,11 @@ export const ROUTES = {
   quests: '/quests',
   questDetail: (id: string | ':id' = ':id') => `/quests/${id}`,
   profile: '/profile',
+  friends: '/friends',
   achievements: '/achievements',
   leaderboard: '/leaderboard',
   settings: '/settings',
+  business: '/business',
   auth: {
     login: '/login',
     register: '/register',

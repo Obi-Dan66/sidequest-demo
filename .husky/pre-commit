@@ -1,0 +1,8 @@
+echo "→ Running format..."
+yarn format
+
+echo "→ Re-staging formatted files..."
+git add .
+
+echo "→ Running lint..."
+yarn lint

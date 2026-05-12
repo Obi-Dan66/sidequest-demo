@@ -1,23 +1,40 @@
+import { sirPip } from '@/assets/images/sir-pip';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
   className?: string;
   withWordmark?: boolean;
+  /** Visual size of the avatar mark. Wordmark scales with it. */
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export const Logo = ({ className, withWordmark = true }: LogoProps) => {
+const sizeMap: Record<NonNullable<LogoProps['size']>, { mark: string; word: string }> = {
+  sm: { mark: 'size-7', word: 'text-base' },
+  md: { mark: 'size-9', word: 'text-lg' },
+  lg: { mark: 'size-12', word: 'text-2xl' },
+};
+
+export const Logo = ({ className, withWordmark = true, size = 'md' }: LogoProps) => {
+  const sizes = sizeMap[size];
+
   return (
     <div className={cn('flex items-center gap-2', className)}>
       <span
         aria-hidden
-        className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-sm"
+        className={cn(
+          'relative grid shrink-0 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-primary/25 to-secondary/25 ring-1 ring-primary/30',
+          sizes.mark,
+        )}
       >
-        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
-          <path d="M12 2 L15 9 L22 10 L17 15 L18 22 L12 18 L6 22 L7 15 L2 10 L9 9 Z" />
-        </svg>
+        <img
+          src={sirPip.bust}
+          alt=""
+          className="h-[120%] w-[120%] object-cover object-center"
+          draggable={false}
+        />
       </span>
       {withWordmark && (
-        <span className="font-display text-lg font-bold tracking-tight">
+        <span className={cn('font-display font-bold tracking-tight', sizes.word)}>
           Side<span className="text-gradient">Quest</span>
         </span>
       )}

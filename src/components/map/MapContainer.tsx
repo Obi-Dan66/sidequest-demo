@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { env } from '@/config/env';
 import { type GeoPoint } from '@/types/place';
+import { type QuestCategory } from '@/types/quest';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const LeafletMap = lazy(() =>
@@ -10,6 +11,8 @@ const LeafletMap = lazy(() =>
 export interface MapMarker {
   id: string;
   position: GeoPoint;
+  category?: QuestCategory;
+  emphasized?: boolean;
   label?: string;
   popup?: ReactNode;
 }
