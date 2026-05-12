@@ -1,42 +1,36 @@
-import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import { env } from '@/config/env';
-import { useAuthStore } from '@/store/auth.store';
-import { type ApiError, normalizeAxiosError } from '@/services/api/errors';
+import { attachAuthHeader } from '@/services/api/interceptors/auth.interceptor';
+import { normalizeError } from '@/services/api/interceptors/error.interceptor';
 
-const attachAuth = (config: InternalAxiosRequestConfig) => {
-  const token = useAuthStore.getState().session?.accessToken;
-  if (token) {
-    config.headers.set('Authorization', `Bearer ${token}`);
-  }
-  return config;
-};
+export interface ApiClientOptions {
+  baseURL?: string;
+  timeoutMs?: number;
+  withCredentials?: boolean;
+}
 
-const handleUnauthorized = (status: number) => {
-  if (status === 401) {
-    useAuthStore.getState().clear();
-  }
-};
-
-export const createApiClient = (baseURL: string = env.api.baseUrl): AxiosInstance => {
+/**
+ * Creates an Axios instance pre-wired with:
+ *  - baseURL pulled from env (single switch for local/staging/prod)
+ *  - JSON headers
+ *  - withCredentials (cookies) controlled by env
+ *  - request interceptor that attaches the bearer token if available
+ *  - response interceptor that normalizes errors into `ApiError`
+ *    and reacts to 401 by clearing the auth session
+ */
+export const createApiClient = (options: ApiClientOptions = {}): AxiosInstance => {
   const instance = axios.create({
-    baseURL,
-    timeout: env.api.timeoutMs,
+    baseURL: options.baseURL ?? env.api.baseUrl,
+    timeout: options.timeoutMs ?? env.api.timeoutMs,
+    withCredentials: options.withCredentials ?? env.api.withCredentials,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     },
   });
 
-  instance.interceptors.request.use(attachAuth);
-
-  instance.interceptors.response.use(
-    (response) => response,
-    (error: unknown) => {
-      const normalized: ApiError = normalizeAxiosError(error);
-      handleUnauthorized(normalized.status);
-      return Promise.reject(normalized);
-    },
-  );
+  instance.interceptors.request.use(attachAuthHeader);
+  instance.interceptors.response.use((response) => response, normalizeError);
 
   return instance;
 };

@@ -15,6 +15,9 @@ export const queryClient = new QueryClient({
 });
 
 export const queryKeys = {
+  health: {
+    check: ['health', 'check'] as const,
+  },
   auth: {
     me: ['auth', 'me'] as const,
   },

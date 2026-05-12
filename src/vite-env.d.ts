@@ -4,8 +4,9 @@ interface ImportMetaEnv {
   readonly VITE_APP_NAME: string;
   readonly VITE_APP_ENV: 'development' | 'staging' | 'production';
   readonly VITE_PORT?: string;
-  readonly VITE_API_BASE_URL: string;
+  readonly VITE_API_URL: string;
   readonly VITE_API_TIMEOUT?: string;
+  readonly VITE_API_WITH_CREDENTIALS?: string;
   readonly VITE_MAP_PROVIDER: 'leaflet' | 'mapbox';
   readonly VITE_MAP_DEFAULT_LAT?: string;
   readonly VITE_MAP_DEFAULT_LNG?: string;

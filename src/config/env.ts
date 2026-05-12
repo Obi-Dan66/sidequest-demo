@@ -21,8 +21,9 @@ export const env = {
   isProd: import.meta.env.PROD,
 
   api: {
-    baseUrl: import.meta.env.VITE_API_BASE_URL ?? '/api',
+    baseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1',
     timeoutMs: toNumber(import.meta.env.VITE_API_TIMEOUT, 15_000),
+    withCredentials: toBoolean(import.meta.env.VITE_API_WITH_CREDENTIALS, true),
   },
 
   map: {

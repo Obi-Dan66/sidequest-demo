@@ -130,8 +130,10 @@ const LandingPage = () => {
             <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[36px] bg-gradient-to-br from-primary/20 via-secondary/20 to-transparent blur-2xl" />
 
             <Card className="overflow-hidden border-white/10 bg-card/70 backdrop-blur-xl">
-              <div className="relative h-64 overflow-hidden bg-gradient-to-br from-primary/30 to-secondary/30 sm:h-72">
-                <Mascot className="absolute left-1/2 top-1/2 h-[110%] -translate-x-1/2 -translate-y-1/2 object-contain" />
+              <div className="relative h-64 overflow-hidden bg-gradient-to-br from-primary/40 via-primary/20 to-secondary/40 sm:h-72">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--primary)/0.35),transparent_60%)]" />
+                <div className="pointer-events-none absolute -bottom-20 left-1/2 size-72 -translate-x-1/2 rounded-full bg-secondary/30 blur-3xl" />
+                <Mascot className="absolute inset-0 m-auto h-[88%] w-auto object-contain drop-shadow-[0_18px_30px_rgba(0,0,0,0.45)]" />
                 <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/30 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
                   <Star className="size-3 text-amber-300" /> Mascot: Sir Pip
                 </div>
