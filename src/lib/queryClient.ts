@@ -23,6 +23,8 @@ export const queryKeys = {
     detail: (id: string) => ['users', 'detail', id] as const,
     myStats: ['users', 'me', 'stats'] as const,
     stats: (id: string) => ['users', id, 'stats'] as const,
+    myHistory: (query?: object) => ['users', 'me', 'history', query ?? {}] as const,
+    history: (id: string, query?: object) => ['users', id, 'history', query ?? {}] as const,
   },
   quests: {
     all: ['quests'] as const,
@@ -53,5 +55,17 @@ export const queryKeys = {
   },
   notifications: {
     list: (query?: object) => ['notifications', 'list', query ?? {}] as const,
+    unreadCount: ['notifications', 'unread-count'] as const,
+  },
+  leaderboard: {
+    list: (query?: object) => ['leaderboard', 'list', query ?? {}] as const,
+  },
+  stats: {
+    public: ['stats', 'public'] as const,
+  },
+  businessMetrics: {
+    me: ['businesses', 'me'] as const,
+    metrics: (query?: object) => ['businesses', 'me', 'metrics', query ?? {}] as const,
+    topQuests: (query?: object) => ['businesses', 'me', 'top-quests', query ?? {}] as const,
   },
 };

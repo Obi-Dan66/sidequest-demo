@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Copy, Mail, Search, Send, UserPlus, Users } from 'lucide-react';
@@ -13,46 +12,70 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { ActivityFeedItem } from '@/components/social/ActivityFeedItem';
 import { FriendListItem } from '@/components/social/FriendListItem';
 import { QuestCard } from '@/components/quests/QuestCard';
-import { mockSocialService } from '@/services/mock/social.service';
-import { mockQuestsService } from '@/services/mock/quests.service';
+import {
+  useAcceptFriendship,
+  useDeclineFriendship,
+  useFriendActivity,
+  useFriends,
+  usePendingFriendRequests,
+} from '@/features/friendships/hooks/useFriendships';
+import { useNearbyQuests } from '@/features/quests/hooks/useQuests';
+import { useMe } from '@/features/auth/hooks/useMe';
 
 const FriendsPage = () => {
   const [search, setSearch] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
 
-  const { data: friends = [], isLoading: friendsLoading } = useQuery({
-    queryKey: ['social', 'friends'],
-    queryFn: () => mockSocialService.friends(),
-  });
-  const { data: activity = [], isLoading: activityLoading } = useQuery({
-    queryKey: ['social', 'activity'],
-    queryFn: () => mockSocialService.activity(),
-  });
-  const { data: invites = [] } = useQuery({
-    queryKey: ['social', 'invites'],
-    queryFn: () => mockSocialService.invites(),
-  });
-  const { data: sharedQuests = [] } = useQuery({
-    queryKey: ['social', 'shared-quests'],
-    queryFn: () => mockQuestsService.nearby(),
-  });
+  const { data: me } = useMe();
+  const { data: friends = [], isLoading: friendsLoading } = useFriends();
+  const { data: activity = [], isLoading: activityLoading } = useFriendActivity({ limit: 10 });
+  const { data: invites = [] } = usePendingFriendRequests();
+  const { data: sharedQuests = [] } = useNearbyQuests();
+  const acceptMutation = useAcceptFriendship();
+  const declineMutation = useDeclineFriendship();
 
   const filteredFriends = friends.filter((friend) =>
     friend.username.toLowerCase().includes(search.trim().toLowerCase()),
   );
 
+  const inviteLink =
+    me?.inviteLink ??
+    (me ? `${window.location.origin}/register?ref=${encodeURIComponent(me.username)}` : null);
+
   const handleInvite = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!inviteEmail) return;
-    toast.success(`Invite sent to ${inviteEmail}`, {
-      description: 'They will earn +50 XP when they join.',
+    toast.info('Email invites are coming soon.', {
+      description: 'For now, share your invite link instead — see FEATURES.md §13.',
     });
     setInviteEmail('');
   };
 
   const handleCopyLink = async () => {
-    await navigator.clipboard.writeText('https://sidequest.app/invite/praguenaut');
+    if (!inviteLink) {
+      toast.error('Sign in to get your invite link.');
+      return;
+    }
+    await navigator.clipboard.writeText(inviteLink);
     toast.success('Invite link copied to clipboard');
+  };
+
+  const handleAccept = async (id: string) => {
+    try {
+      await acceptMutation.mutateAsync(id);
+      toast.success('Friend request accepted');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not accept the request.');
+    }
+  };
+
+  const handleDecline = async (id: string) => {
+    try {
+      await declineMutation.mutateAsync(id);
+      toast.message('Friend request declined');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not decline the request.');
+    }
   };
 
   return (
@@ -189,10 +212,20 @@ const FriendsPage = () => {
                         <p className="text-xs text-muted-foreground">Lvl {invite.level}</p>
                       </div>
                       <div className="flex gap-1">
-                        <Button size="sm" variant="gradient">
+                        <Button
+                          size="sm"
+                          variant="gradient"
+                          disabled={acceptMutation.isPending}
+                          onClick={() => handleAccept(invite.id)}
+                        >
                           Accept
                         </Button>
-                        <Button size="sm" variant="ghost">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={declineMutation.isPending}
+                          onClick={() => handleDecline(invite.id)}
+                        >
                           Decline
                         </Button>
                       </div>

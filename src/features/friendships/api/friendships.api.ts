@@ -2,9 +2,10 @@ import { http } from '@/services/api';
 import {
   type CreateFriendshipDto,
   type FriendActivityDto,
+  type FriendSummaryDto,
   type FriendshipDto,
   type FriendshipStatus,
-  type UserDto,
+  type PendingFriendshipDto,
 } from '@/types/dto';
 
 export interface FriendshipListQuery {
@@ -13,6 +14,7 @@ export interface FriendshipListQuery {
 
 export interface FriendActivityQuery {
   limit?: number;
+  cursor?: string;
 }
 
 export const friendshipsApi = {
@@ -20,12 +22,14 @@ export const friendshipsApi = {
     return http.get<FriendshipDto[]>('/friendships', { params: query });
   },
 
-  listFriends(): Promise<UserDto[]> {
-    return http.get<UserDto[]>('/friendships/friends');
+  /** Returns enriched friend summaries (FEATURES.md §7). */
+  listFriends(): Promise<FriendSummaryDto[]> {
+    return http.get<FriendSummaryDto[]>('/friendships/friends');
   },
 
-  listPending(): Promise<FriendshipDto[]> {
-    return http.get<FriendshipDto[]>('/friendships/pending');
+  /** Returns pending friend requests with the requester user resolved (FEATURES.md §6). */
+  listPending(): Promise<PendingFriendshipDto[]> {
+    return http.get<PendingFriendshipDto[]>('/friendships/pending');
   },
 
   activity(query: FriendActivityQuery = {}): Promise<FriendActivityDto[]> {
@@ -38,6 +42,11 @@ export const friendshipsApi = {
 
   accept(id: string): Promise<FriendshipDto> {
     return http.post<FriendshipDto>(`/friendships/${id}/accept`);
+  },
+
+  /** No "decline" endpoint exists today — decline is implemented as DELETE. */
+  decline(id: string): Promise<void> {
+    return http.deleteVoid(`/friendships/${id}`);
   },
 
   block(userId: string): Promise<FriendshipDto> {

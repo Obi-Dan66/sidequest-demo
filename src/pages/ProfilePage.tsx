@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { Link, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   Award,
@@ -14,6 +13,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatar } from '@/components/common/UserAvatar';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -23,32 +23,36 @@ import { UserStatsCard } from '@/components/gamification/UserStatsCard';
 import { AchievementBadge } from '@/components/gamification/AchievementBadge';
 import { FriendListItem } from '@/components/social/FriendListItem';
 import { useAuth } from '@/hooks/useAuth';
-import { mockUsersService } from '@/services/mock/users.service';
-import { mockSocialService } from '@/services/mock/social.service';
-import { mockCurrentUser } from '@/lib/mock/users.mock';
+import { useMe } from '@/features/auth/hooks/useMe';
+import { useMyStats } from '@/features/users/hooks/useUsers';
+import { useMyAchievements } from '@/features/achievements/hooks/useAchievements';
+import { useFriends } from '@/features/friendships/hooks/useFriendships';
+import { useMyQuestHistory } from '@/features/users/hooks/useQuestHistory';
+import { toUser } from '@/lib/adapters';
 import { ROUTES } from '@/config/routes';
 import { formatNumber } from '@/lib/utils';
 
 const ProfilePage = () => {
-  const { user: authUser, signOut } = useAuth();
-  const user = authUser ?? mockCurrentUser;
+  const { isAuthenticated, signOut } = useAuth();
+  const meQuery = useMe();
+  const statsQuery = useMyStats(isAuthenticated);
+  const achievementsQuery = useMyAchievements(isAuthenticated);
+  const friendsQuery = useFriends();
+  const historyQuery = useMyQuestHistory({ limit: 10, status: 'COMPLETED' });
 
-  const { data: stats } = useQuery({
-    queryKey: ['profile', 'stats'],
-    queryFn: () => mockUsersService.stats(),
-  });
-  const { data: achievements = [] } = useQuery({
-    queryKey: ['profile', 'achievements'],
-    queryFn: () => mockUsersService.achievements(),
-  });
-  const { data: history = [] } = useQuery({
-    queryKey: ['profile', 'history'],
-    queryFn: () => mockUsersService.history(),
-  });
-  const { data: friends = [] } = useQuery({
-    queryKey: ['profile', 'friends-preview'],
-    queryFn: () => mockSocialService.friends(),
-  });
+  if (!isAuthenticated) {
+    return <Navigate to={ROUTES.auth.login} replace />;
+  }
+
+  if (meQuery.isLoading || !meQuery.data) {
+    return <ProfilePageSkeleton />;
+  }
+
+  const user = toUser(meQuery.data, statsQuery.data);
+  const stats = statsQuery.data;
+  const achievements = achievementsQuery.data ?? [];
+  const friends = friendsQuery.data ?? [];
+  const history = historyQuery.data?.items ?? [];
 
   const unlocked = achievements.filter((a) => a.unlockedAt);
   const locked = achievements.filter((a) => !a.unlockedAt);
@@ -136,19 +140,33 @@ const ProfilePage = () => {
                 </Button>
               }
             />
-            <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 md:grid-cols-8">
-              {achievements.slice(0, 8).map((achievement) => (
-                <div
-                  key={achievement.id}
-                  className="flex flex-col items-center gap-1.5 text-center"
-                >
-                  <AchievementBadge achievement={achievement} size="md" />
-                  <span className="line-clamp-2 text-[11px] font-medium text-muted-foreground">
-                    {achievement.title}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {achievementsQuery.isLoading ? (
+              <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 md:grid-cols-8">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <Skeleton key={index} className="size-14 rounded-full" />
+                ))}
+              </div>
+            ) : achievements.length === 0 ? (
+              <EmptyState
+                title="No achievements yet"
+                description="Complete your first quest to unlock your first trophy."
+                icon={Trophy}
+              />
+            ) : (
+              <div className="grid grid-cols-4 gap-4 sm:grid-cols-6 md:grid-cols-8">
+                {achievements.slice(0, 8).map((achievement) => (
+                  <div
+                    key={achievement.id}
+                    className="flex flex-col items-center gap-1.5 text-center"
+                  >
+                    <AchievementBadge achievement={achievement} size="md" />
+                    <span className="line-clamp-2 text-[11px] font-medium text-muted-foreground">
+                      {achievement.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -163,7 +181,15 @@ const ProfilePage = () => {
                 </Button>
               }
             />
-            {friends.length === 0 ? (
+            {friendsQuery.isLoading ? (
+              <ul className="flex flex-col gap-2">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <li key={index}>
+                    <Skeleton className="h-14 w-full rounded-2xl" />
+                  </li>
+                ))}
+              </ul>
+            ) : friends.length === 0 ? (
               <EmptyState
                 title="No friends yet"
                 description="Invite some explorers to make every quest more fun."
@@ -184,7 +210,15 @@ const ProfilePage = () => {
         <Card>
           <CardContent className="space-y-3 p-5">
             <SectionHeader title="Recent quests" subtitle="Your latest completed quests." />
-            {history.length === 0 ? (
+            {historyQuery.isLoading ? (
+              <ul className="flex flex-col gap-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <li key={index}>
+                    <Skeleton className="h-14 w-full rounded-xl" />
+                  </li>
+                ))}
+              </ul>
+            ) : history.length === 0 ? (
               <EmptyState
                 title="No history yet"
                 description="Complete your first quest to see it here."
@@ -200,15 +234,17 @@ const ProfilePage = () => {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">
                         <Link to={ROUTES.questDetail(entry.questId)} className="hover:text-primary">
-                          {entry.questTitle}
+                          {entry.quest.title}
                         </Link>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(entry.completedAt).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                        })}{' '}
-                        · {entry.durationMinutes} min
+                        {entry.completedAt
+                          ? new Date(entry.completedAt).toLocaleDateString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                            })
+                          : 'In progress'}
+                        {entry.durationMinutes !== null && ` · ${entry.durationMinutes} min`}
                       </p>
                     </div>
                     <span className="font-semibold text-[hsl(var(--xp))]">
@@ -224,5 +260,20 @@ const ProfilePage = () => {
     </div>
   );
 };
+
+const ProfilePageSkeleton = () => (
+  <div className="flex flex-col gap-6">
+    <Skeleton className="h-40 w-full rounded-3xl" />
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <Skeleton key={index} className="h-20 rounded-2xl" />
+      ))}
+    </div>
+    <div className="grid gap-6 lg:grid-cols-3">
+      <Skeleton className="h-56 rounded-2xl lg:col-span-2" />
+      <Skeleton className="h-56 rounded-2xl" />
+    </div>
+  </div>
+);
 
 export default ProfilePage;

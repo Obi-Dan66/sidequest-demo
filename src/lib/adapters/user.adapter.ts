@@ -1,13 +1,17 @@
-import { type UserDto, type UserStatsDto } from '@/types/dto';
+import { type UserDto } from '@/types/dto';
 import { type User } from '@/types/user';
 
 /** XP curve fallback when the backend doesn't provide `xpToNextLevel`. */
 const xpForLevel = (level: number): number => Math.round(100 * Math.pow(1.35, Math.max(0, level)));
 
-export const toUser = (dto: UserDto, stats?: UserStatsDto): User => {
+export interface XpToNextLevelHint {
+  xpToNextLevel?: number;
+}
+
+export const toUser = (dto: UserDto, hint?: XpToNextLevelHint): User => {
   const xpToNextLevel =
-    stats?.xpToNextLevel !== undefined && stats.xpToNextLevel > 0
-      ? stats.xpToNextLevel
+    hint?.xpToNextLevel !== undefined && hint.xpToNextLevel > 0
+      ? hint.xpToNextLevel
       : xpForLevel(dto.level + 1);
 
   return {
@@ -20,6 +24,7 @@ export const toUser = (dto: UserDto, stats?: UserStatsDto): User => {
     level: dto.level,
     xp: dto.xp,
     xpToNextLevel,
+    title: dto.title ?? undefined,
     joinedAt: dto.createdAt,
     role: dto.role,
     status: dto.status,

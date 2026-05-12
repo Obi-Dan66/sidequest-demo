@@ -8,4 +8,5 @@ export const toUserStats = (dto: UserStatsDto): UserStats => ({
   achievementsUnlocked: dto.achievementsUnlocked ?? 0,
   longestStreakDays: dto.longestStreakDays ?? dto.streakDays,
   currentStreakDays: dto.streakDays,
+  xpToNextLevel: dto.xpToNextLevel,
 });

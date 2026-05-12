@@ -1,5 +1,16 @@
-import { type FriendActivityDto, type UserDto } from '@/types/dto';
-import { type ActivityItem, type ActivityKind, type Friend } from '@/types/social';
+import {
+  type FriendActivityDto,
+  type FriendPresenceStatus,
+  type FriendSummaryDto,
+  type PendingFriendshipDto,
+} from '@/types/dto';
+import {
+  type ActivityItem,
+  type ActivityKind,
+  type Friend,
+  type FriendInvite,
+  type FriendStatus,
+} from '@/types/social';
 
 const activityKindMap: Record<FriendActivityDto['kind'], ActivityKind> = {
   QUEST_COMPLETED: 'completed_quest',
@@ -9,14 +20,30 @@ const activityKindMap: Record<FriendActivityDto['kind'], ActivityKind> = {
   PLACE_VISITED: 'visited_place',
 };
 
-export const toFriend = (dto: UserDto): Friend => ({
+const presenceMap: Record<FriendPresenceStatus, FriendStatus> = {
+  ONLINE: 'online',
+  QUESTING: 'questing',
+  OFFLINE: 'offline',
+};
+
+export const toFriend = (dto: FriendSummaryDto): Friend => ({
   id: dto.id,
   username: dto.username,
   avatarUrl: dto.avatarUrl ?? undefined,
   level: dto.level,
   xp: dto.xp,
-  status: 'offline',
-  mutualQuestsCount: 0,
+  status: presenceMap[dto.status] ?? 'offline',
+  currentQuestTitle: dto.currentQuest?.title ?? undefined,
+  lastSeen: dto.lastSeenAt ?? undefined,
+  mutualQuestsCount: dto.mutualQuestsCount ?? 0,
+});
+
+export const toFriendInvite = (dto: PendingFriendshipDto): FriendInvite => ({
+  id: dto.id,
+  fromUsername: dto.requester.username,
+  fromAvatarUrl: dto.requester.avatarUrl ?? undefined,
+  level: dto.requester.level,
+  createdAt: dto.createdAt,
 });
 
 const activityTitle = (dto: FriendActivityDto): string => {

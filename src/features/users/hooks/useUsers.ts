@@ -27,10 +27,12 @@ export const useUserStats = (id: string | undefined) =>
     enabled: Boolean(id),
   });
 
-export const useMyStats = () =>
+export const useMyStats = (enabled = true) =>
   useQuery<UserStats, ApiError>({
     queryKey: queryKeys.users.myStats,
     queryFn: async () => toUserStats(await usersApi.myStats()),
+    enabled,
+    retry: false,
   });
 
 export const useUpdateMe = () => {

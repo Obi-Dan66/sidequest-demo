@@ -5,8 +5,8 @@ import {
   type FriendshipListQuery,
 } from '@/features/friendships/api/friendships.api';
 import { queryKeys } from '@/lib/queryClient';
-import { toActivityItem, toFriend } from '@/lib/adapters';
-import { type ActivityItem, type Friend } from '@/types/social';
+import { toActivityItem, toFriend, toFriendInvite } from '@/lib/adapters';
+import { type ActivityItem, type Friend, type FriendInvite } from '@/types/social';
 import { type CreateFriendshipDto, type FriendshipDto, type UserDto } from '@/types/dto';
 import { type ApiError } from '@/services/api/errors';
 
@@ -14,24 +14,28 @@ export const useFriendships = (query: FriendshipListQuery = {}) =>
   useQuery<FriendshipDto[], ApiError>({
     queryKey: queryKeys.friendships.mine(query),
     queryFn: () => friendshipsApi.listMine(query),
+    retry: false,
   });
 
 export const useFriends = () =>
   useQuery<Friend[], ApiError>({
     queryKey: queryKeys.friendships.friends,
     queryFn: async () => (await friendshipsApi.listFriends()).map(toFriend),
+    retry: false,
   });
 
 export const usePendingFriendRequests = () =>
-  useQuery<FriendshipDto[], ApiError>({
+  useQuery<FriendInvite[], ApiError>({
     queryKey: queryKeys.friendships.pending,
-    queryFn: () => friendshipsApi.listPending(),
+    queryFn: async () => (await friendshipsApi.listPending()).map(toFriendInvite),
+    retry: false,
   });
 
 export const useFriendActivity = (query: FriendActivityQuery = {}) =>
   useQuery<ActivityItem[], ApiError>({
     queryKey: queryKeys.friendships.activity(query),
     queryFn: async () => (await friendshipsApi.activity(query)).map(toActivityItem),
+    retry: false,
   });
 
 const invalidateFriendships = (queryClient: ReturnType<typeof useQueryClient>): void => {
@@ -51,6 +55,14 @@ export const useAcceptFriendship = () => {
   const queryClient = useQueryClient();
   return useMutation<FriendshipDto, ApiError, string>({
     mutationFn: (id) => friendshipsApi.accept(id),
+    onSuccess: () => invalidateFriendships(queryClient),
+  });
+};
+
+export const useDeclineFriendship = () => {
+  const queryClient = useQueryClient();
+  return useMutation<void, ApiError, string>({
+    mutationFn: (id) => friendshipsApi.decline(id),
     onSuccess: () => invalidateFriendships(queryClient),
   });
 };

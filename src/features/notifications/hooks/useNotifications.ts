@@ -9,11 +9,17 @@ export const useNotifications = (query: ListQuery = {}) =>
   useQuery<PaginatedResponse<NotificationDto>, ApiError>({
     queryKey: queryKeys.notifications.list(query),
     queryFn: () => notificationsApi.list(query),
+    retry: false,
   });
 
-export const useUnreadNotificationCount = (query: ListQuery = {}): number => {
-  const { data } = useNotifications(query);
-  return (data?.data ?? []).filter((notification) => notification.readAt === null).length;
+export const useUnreadNotificationCount = (): number => {
+  const { data } = useQuery({
+    queryKey: queryKeys.notifications.unreadCount,
+    queryFn: () => notificationsApi.unreadCount(),
+    retry: false,
+    refetchInterval: 60_000,
+  });
+  return data?.count ?? 0;
 };
 
 export const useMarkNotificationRead = () => {

@@ -27,8 +27,7 @@ const isQuestCategory = (value: unknown): value is QuestCategory =>
   typeof value === 'string' && knownCategories.has(value as QuestCategory);
 
 interface QuestDtoMaybeWithCategory extends QuestDto {
-  /** Some backends serialize a category relation alongside the id. */
-  category?: { slug?: string | null } | null;
+  /** Some backends serialize a flat slug alongside the relation. */
   categorySlug?: string | null;
 }
 
@@ -71,11 +70,19 @@ export const toQuest = (raw: QuestDto): Quest => {
     coverImageUrl: dto.coverImageUrl ?? dto.imageUrl ?? undefined,
     startLocation: firstStartLocation(locations),
     steps: locations.map(toStep),
-    reward: { xp: dto.xpReward },
-    tags: [],
-    participants: [],
-    participantCount: 0,
-    rating: undefined,
+    reward: {
+      xp: dto.xpReward,
+      achievementIds: dto.rewards?.achievements.map((a) => a.id),
+    },
+    tags: dto.tags ?? [],
+    participants: (dto.participants ?? []).map((p) => ({
+      id: p.id,
+      username: p.username,
+      avatarUrl: p.avatarUrl ?? undefined,
+      level: p.level,
+    })),
+    participantCount: dto.participantCount ?? dto.participants?.length ?? 0,
+    rating: dto.rating ?? undefined,
     createdAt: dto.createdAt,
   };
 };

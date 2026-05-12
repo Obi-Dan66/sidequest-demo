@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AchievementCard } from '@/components/gamification/AchievementCard';
@@ -6,13 +5,16 @@ import { AchievementBadge } from '@/components/gamification/AchievementBadge';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Card, CardContent } from '@/components/ui/card';
-import { mockUsersService } from '@/services/mock/users.service';
+import { useMyAchievements } from '@/features/achievements/hooks/useAchievements';
+import { useAuth } from '@/hooks/useAuth';
+import { useAchievements } from '@/features/achievements/hooks/useAchievements';
 
 const AchievementsPage = () => {
-  const { data: achievements = [], isLoading } = useQuery({
-    queryKey: ['achievements', 'all'],
-    queryFn: () => mockUsersService.achievements(),
-  });
+  const { isAuthenticated } = useAuth();
+  const mine = useMyAchievements(isAuthenticated);
+  const all = useAchievements(!isAuthenticated);
+  const achievements = isAuthenticated ? (mine.data ?? []) : (all.data ?? []);
+  const isLoading = isAuthenticated ? mine.isLoading : all.isLoading;
 
   const unlocked = achievements.filter((a) => a.unlockedAt);
   const inProgress = achievements.filter((a) => !a.unlockedAt && a.progress);

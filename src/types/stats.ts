@@ -5,6 +5,7 @@ export interface UserStats {
   achievementsUnlocked: number;
   longestStreakDays: number;
   currentStreakDays: number;
+  xpToNextLevel?: number;
 }
 
 export interface QuestHistoryItem {

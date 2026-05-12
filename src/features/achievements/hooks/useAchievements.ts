@@ -5,14 +5,18 @@ import { toAchievement } from '@/lib/adapters';
 import { type Achievement } from '@/types/achievement';
 import { type ApiError } from '@/services/api/errors';
 
-export const useAchievements = () =>
+export const useAchievements = (enabled = true) =>
   useQuery<Achievement[], ApiError>({
     queryKey: queryKeys.achievements.all,
     queryFn: async () => (await achievementsApi.listAll()).map(toAchievement),
+    enabled,
+    retry: false,
   });
 
-export const useMyAchievements = () =>
+export const useMyAchievements = (enabled = true) =>
   useQuery<Achievement[], ApiError>({
     queryKey: queryKeys.achievements.mine,
     queryFn: async () => (await achievementsApi.listMine()).map(toAchievement),
+    enabled,
+    retry: false,
   });

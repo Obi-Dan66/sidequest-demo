@@ -27,4 +27,7 @@ coverage
 .cache
 .turbo
 
+
+# backend files
 openapi.yaml
+FEATURES.md

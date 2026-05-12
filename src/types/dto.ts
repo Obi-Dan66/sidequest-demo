@@ -28,8 +28,20 @@ export interface UserDto {
   level: number;
   questsDone: number;
   streakDays: number;
+  /** Computed flavour rank (FEATURES.md §15). */
+  title?: string | null;
+  /** Personal referral link (FEATURES.md §13). */
+  inviteLink?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ParticipantSummaryDto {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  level: number;
 }
 
 export interface UserStatsDto {
@@ -37,6 +49,7 @@ export interface UserStatsDto {
   level: number;
   questsDone: number;
   streakDays: number;
+  /** All fields below are optional in v1; planned in FEATURES.md §1. */
   achievementsUnlocked?: number;
   placesVisited?: number;
   distanceWalkedKm?: number;
@@ -75,6 +88,25 @@ export interface QuestDto {
   updatedAt: string;
   locations?: QuestLocationDto[];
   distanceM?: number;
+  /** FEATURES.md §3 — enrichment. Fields below are optional in v1. */
+  tags?: string[];
+  rating?: number | null;
+  ratingCount?: number;
+  participantCount?: number;
+  participants?: ParticipantSummaryDto[];
+  category?: QuestCategoryDto | null;
+  rewards?: {
+    xp: number;
+    achievements: AchievementSummaryDto[];
+  };
+}
+
+export interface AchievementSummaryDto {
+  id: string;
+  slug: string;
+  name: string;
+  iconUrl?: string | null;
+  xpBonus: number;
 }
 
 export interface QuestCategoryDto {
@@ -85,6 +117,8 @@ export interface QuestCategoryDto {
   iconUrl?: string | null;
   coverImageUrl?: string | null;
   colorHex?: string | null;
+  /** FEATURES.md §16. */
+  questCount?: number;
 }
 
 export type AchievementType =
@@ -93,6 +127,100 @@ export type AchievementType =
   | 'PLACES_VISITED'
   | 'STREAK_DAYS'
   | 'SPECIAL';
+
+/** FEATURES.md §2 — `GET /users/me/quests/history`. Planned. */
+export type UserQuestStatus = 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
+
+export interface QuestHistoryItemDto {
+  id: string;
+  questId: string;
+  quest: {
+    id: string;
+    slug: string;
+    title: string;
+    coverImageUrl: string | null;
+  };
+  status: UserQuestStatus;
+  startedAt: string;
+  completedAt: string | null;
+  xpEarned: number;
+  durationMinutes: number | null;
+}
+
+/** FEATURES.md §6 — `GET /friendships/pending`. */
+export interface PendingFriendshipDto {
+  id: string;
+  requester: ParticipantSummaryDto;
+  createdAt: string;
+}
+
+/** FEATURES.md §7 — `GET /friendships/friends`. */
+export type FriendPresenceStatus = 'ONLINE' | 'QUESTING' | 'OFFLINE';
+
+export interface FriendSummaryDto {
+  id: string;
+  username: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+  level: number;
+  xp: number;
+  status: FriendPresenceStatus;
+  currentQuest: { id: string; title: string } | null;
+  lastSeenAt: string | null;
+  mutualQuestsCount: number;
+}
+
+/** FEATURES.md §10. */
+export type LeaderboardScope = 'GLOBAL' | 'CITY';
+export type LeaderboardPeriod = 'ALL_TIME' | 'MONTH' | 'WEEK';
+
+export interface LeaderboardEntryDto {
+  rank: number;
+  user: ParticipantSummaryDto;
+  xp: number;
+  questsDone: number;
+  isMe: boolean;
+}
+
+export interface LeaderboardResponseDto {
+  entries: LeaderboardEntryDto[];
+  myEntry: LeaderboardEntryDto | null;
+}
+
+/** FEATURES.md §11. */
+export interface PublicStatsDto {
+  totalExplorers: number;
+  totalQuests: number;
+  totalQuestCompletions: number;
+  totalDistanceKm: number;
+  cities: Array<{ slug: string; name: string; explorers: number }>;
+  featuredQuest: QuestDto | null;
+}
+
+/** FEATURES.md §12. */
+export type BusinessMetricsPeriod = 'MONTH' | '7D' | '30D' | '90D';
+
+export interface BusinessMetricsDto {
+  period: BusinessMetricsPeriod;
+  monthlyVisits: { value: number; deltaPct: number };
+  questCompletions: { value: number; deltaPct: number };
+  avgRating: { value: number; deltaAbs: number };
+  repeatVisitors: { value: number; deltaPct: number };
+}
+
+export interface BusinessTopQuestDto {
+  id: string;
+  title: string;
+  visits: number;
+  completions: number;
+  conversion: number;
+  rating: number | null;
+  ratingCount: number;
+}
+
+export interface UnreadCountDto {
+  count: number;
+}
 
 export interface AchievementDto {
   id: string;

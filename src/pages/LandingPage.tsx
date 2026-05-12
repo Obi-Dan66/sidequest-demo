@@ -16,10 +16,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Mascot } from '@/components/common/Mascot';
-import { XPBar } from '@/components/gamification/XPBar';
-import { LevelBadge } from '@/components/gamification/LevelBadge';
 import { ROUTES } from '@/config/routes';
 import { siteConfig } from '@/config/site';
+import { usePublicStats } from '@/features/stats/hooks/usePublicStats';
+import { toQuest } from '@/lib/adapters';
+import { formatNumber } from '@/lib/utils';
 
 const features = [
   {
@@ -76,6 +77,12 @@ const item = {
 };
 
 const LandingPage = () => {
+  const { data: publicStats } = usePublicStats();
+  const featuredQuest = publicStats?.featuredQuest ? toQuest(publicStats.featuredQuest) : null;
+  const explorersInCity =
+    publicStats?.cities.find((city) => city.slug === siteConfig.primaryCity.slug)?.explorers ??
+    publicStats?.totalExplorers;
+
   return (
     <div className="flex flex-col gap-24 pb-20">
       <section className="container relative pt-10 md:pt-16">
@@ -108,22 +115,26 @@ const LandingPage = () => {
                 </Link>
               </Button>
             </div>
-            <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
-              <div className="flex -space-x-2">
-                {['A', 'B', 'C', 'D'].map((letter) => (
-                  <span
-                    key={letter}
-                    className="grid size-7 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary text-[10px] font-semibold text-primary-foreground"
-                  >
-                    {letter}
-                  </span>
-                ))}
+            {typeof explorersInCity === 'number' && explorersInCity > 0 && (
+              <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex -space-x-2">
+                  {['A', 'B', 'C', 'D'].map((letter) => (
+                    <span
+                      key={letter}
+                      className="grid size-7 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary text-[10px] font-semibold text-primary-foreground"
+                    >
+                      {letter}
+                    </span>
+                  ))}
+                </div>
+                <span>
+                  <span className="font-semibold text-foreground">
+                    {formatNumber(explorersInCity)} explorers
+                  </span>{' '}
+                  already questing in {siteConfig.primaryCity.name}
+                </span>
               </div>
-              <span>
-                <span className="font-semibold text-foreground">2,400+ explorers</span> already
-                questing in Prague
-              </span>
-            </div>
+            )}
           </motion.div>
 
           <motion.div variants={item} className="relative">
@@ -138,22 +149,32 @@ const LandingPage = () => {
                   <Star className="size-3 text-amber-300" /> Mascot: Sir Pip
                 </div>
               </div>
-              <CardContent className="space-y-3 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-display text-base font-semibold">Old Town Secrets</p>
-                    <p className="text-xs text-muted-foreground">3 steps · 45 min · 1.5 km</p>
+              {featuredQuest && (
+                <CardContent className="space-y-3 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-display text-base font-semibold">{featuredQuest.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {featuredQuest.steps.length} step
+                        {featuredQuest.steps.length === 1 ? '' : 's'} ·{' '}
+                        {featuredQuest.estimatedMinutes} min · {featuredQuest.distanceKm.toFixed(1)}{' '}
+                        km
+                      </p>
+                    </div>
+                    <Badge variant="success">+{featuredQuest.reward.xp} XP</Badge>
                   </div>
-                  <Badge variant="success">+250 XP</Badge>
-                </div>
-                <div className="flex items-center gap-3">
-                  <LevelBadge level={12} />
-                  <div className="min-w-0 flex-1">
-                    <XPBar level={12} xp={4280} xpToNextLevel={6000} showNumbers={false} />
+                  <div className="flex items-center gap-3">
+                    <Link
+                      to={ROUTES.questDetail(featuredQuest.id)}
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      Featured quest
+                    </Link>
+                    <span className="text-[11px] text-muted-foreground">Tap to view</span>
+                    <Award className="ml-auto size-5 text-[hsl(var(--legendary))]" />
                   </div>
-                  <Award className="size-5 text-[hsl(var(--legendary))]" />
-                </div>
-              </CardContent>
+                </CardContent>
+              )}
             </Card>
           </motion.div>
         </motion.div>

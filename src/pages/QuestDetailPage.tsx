@@ -22,8 +22,8 @@ import { UserAvatar } from '@/components/common/UserAvatar';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { EmptyState } from '@/components/common/EmptyState';
 import { AchievementBadge } from '@/components/gamification/AchievementBadge';
-import { useMockQuest } from '@/features/quests/hooks/useMockQuests';
-import { mockAchievements } from '@/lib/mock/achievements.mock';
+import { useQuest, useStartQuest } from '@/features/quests/hooks/useQuests';
+import { useAchievements } from '@/features/achievements/hooks/useAchievements';
 import { questCategoryMap } from '@/lib/categories';
 import { ROUTES } from '@/config/routes';
 import { cn, formatNumber } from '@/lib/utils';
@@ -38,7 +38,9 @@ const difficultyToBadge: Record<QuestDifficulty, 'success' | 'rare' | 'epic' | '
 
 const QuestDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: quest, isLoading, isError } = useMockQuest(id);
+  const { data: quest, isLoading, isError } = useQuest(id);
+  const { data: achievements = [] } = useAchievements();
+  const startMutation = useStartQuest();
 
   if (isLoading) return <QuestDetailSkeleton />;
 
@@ -57,14 +59,21 @@ const QuestDetailPage = () => {
   }
 
   const category = questCategoryMap[quest.category];
-  const rewardAchievements = mockAchievements.filter((achievement) =>
+  const rewardAchievements = achievements.filter((achievement) =>
     quest.reward.achievementIds?.includes(achievement.id),
   );
 
-  const handleStart = () => {
-    toast.success(`"${quest.title}" added to your active quests!`, {
-      description: `Earn ${quest.reward.xp} XP when you complete all ${quest.steps.length || 'the'} steps.`,
-    });
+  const handleStart = async () => {
+    try {
+      await startMutation.mutateAsync(quest.id);
+      toast.success(`"${quest.title}" added to your active quests!`, {
+        description: `Earn ${quest.reward.xp} XP when you complete all ${quest.steps.length || 'the'} steps.`,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Could not start the quest. Try again later.';
+      toast.error(message);
+    }
   };
 
   return (
@@ -204,8 +213,14 @@ const QuestDetailPage = () => {
                 ]}
                 className="h-48 overflow-hidden rounded-xl border"
               />
-              <Button onClick={handleStart} size="lg" variant="gradient" className="w-full">
-                <Zap className="size-4" /> Start quest
+              <Button
+                onClick={handleStart}
+                size="lg"
+                variant="gradient"
+                className="w-full"
+                disabled={startMutation.isPending}
+              >
+                <Zap className="size-4" /> {startMutation.isPending ? 'Starting…' : 'Start quest'}
               </Button>
             </CardContent>
           </Card>

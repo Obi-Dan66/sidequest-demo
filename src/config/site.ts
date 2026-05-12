@@ -6,6 +6,7 @@ export const siteConfig = {
   description:
     'SideQuest is a gamified exploration app. Find hidden gems, complete quests, earn XP, and level up your real-world adventures.',
   primaryCity: {
+    slug: 'prague',
     name: 'Prague',
     countryCode: 'CZ',
     lat: 50.0875,

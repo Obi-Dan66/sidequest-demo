@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, MapPin } from 'lucide-react';
-import { useMockQuests } from '@/features/quests/hooks/useMockQuests';
+import { useQuests } from '@/features/quests/hooks/useQuests';
 import { siteConfig } from '@/config/site';
 import { type Quest, type QuestCategory } from '@/types/quest';
 import { questCategoryMap } from '@/lib/categories';
@@ -23,7 +23,11 @@ const ExplorePage = () => {
   const [search, setSearch] = useState('');
   const [selectedQuestId, setSelectedQuestId] = useState<string | undefined>();
 
-  const { data: quests = [], isLoading } = useMockQuests({ category, search });
+  const { data, isLoading } = useQuests({
+    categorySlug: category === 'all' ? undefined : category,
+    search: search.trim() || undefined,
+  });
+  const quests = useMemo(() => data?.quests ?? [], [data?.quests]);
 
   const markers: MapMarker[] = useMemo(
     () =>
