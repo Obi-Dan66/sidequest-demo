@@ -117,16 +117,9 @@ const LandingPage = () => {
             </div>
             {typeof explorersInCity === 'number' && explorersInCity > 0 && (
               <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
-                <div className="flex -space-x-2">
-                  {['A', 'B', 'C', 'D'].map((letter) => (
-                    <span
-                      key={letter}
-                      className="grid size-7 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary to-secondary text-[10px] font-semibold text-primary-foreground"
-                    >
-                      {letter}
-                    </span>
-                  ))}
-                </div>
+                <span className="grid size-10 shrink-0 place-items-center rounded-full border-2 border-background bg-gradient-to-br from-primary/30 to-secondary/30">
+                  <Users className="size-5 text-primary" aria-hidden />
+                </span>
                 <span>
                   <span className="font-semibold text-foreground">
                     {formatNumber(explorersInCity)} explorers

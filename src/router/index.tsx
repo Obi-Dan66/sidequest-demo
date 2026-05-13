@@ -38,9 +38,9 @@ export const AppRouter = () => {
           <Route path="/quests/:id" element={<QuestDetailPage />} />
           <Route path={ROUTES.achievements} element={<AchievementsPage />} />
           <Route path={ROUTES.leaderboard} element={<LeaderboardPage />} />
-          <Route path={ROUTES.friends} element={<FriendsPage />} />
 
           <Route element={<ProtectedRoute />}>
+            <Route path={ROUTES.friends} element={<FriendsPage />} />
             <Route path={ROUTES.profile} element={<ProfilePage />} />
             <Route path={ROUTES.settings} element={<SettingsPage />} />
           </Route>

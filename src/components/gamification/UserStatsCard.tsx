@@ -1,11 +1,12 @@
 import { type LucideIcon } from 'lucide-react';
+import { type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 interface UserStatsCardProps {
   label: string;
-  value: string | number;
+  value: ReactNode;
   icon: LucideIcon;
   hint?: string;
   accentClass?: string;
@@ -38,7 +39,7 @@ export const UserStatsCard = ({
             <Icon className="size-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-display text-xl font-bold leading-tight">{value}</p>
+            <div className="font-display text-xl font-bold leading-tight">{value}</div>
             <p className="truncate text-xs text-muted-foreground">{label}</p>
           </div>
           {hint && <span className="text-[11px] font-medium text-[hsl(var(--xp))]">{hint}</span>}

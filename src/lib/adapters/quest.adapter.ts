@@ -33,7 +33,27 @@ interface QuestDtoMaybeWithCategory extends QuestDto {
 
 const readCategorySlug = (dto: QuestDtoMaybeWithCategory): QuestCategory => {
   const slug = dto.categorySlug ?? dto.category?.slug ?? null;
-  return isQuestCategory(slug) ? slug : 'exploration';
+  if (slug === null || slug === '') return 'exploration';
+
+  const normalized = slug.toLowerCase();
+  const backendAlias: Record<string, QuestCategory> = {
+    cafes: 'food',
+    bakery: 'food',
+    coffee: 'food',
+    geocache: 'exploration',
+    hidden: 'exploration',
+    history: 'history',
+    museum: 'culture',
+    culture: 'culture',
+    nature: 'nature',
+    parks: 'nature',
+    nightlife: 'nightlife',
+    night: 'nightlife',
+  };
+  const aliased = backendAlias[normalized];
+  if (aliased) return aliased;
+
+  return isQuestCategory(normalized) ? normalized : 'exploration';
 };
 
 const toStep = (location: QuestLocationDto): QuestStep => ({

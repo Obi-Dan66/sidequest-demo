@@ -1,10 +1,11 @@
+/** Mapped from `UserStatsDto`. Omitted backend fields stay `undefined` so the UI shows "—" or derives from live endpoints (see Profile). */
 export interface UserStats {
   questsCompleted: number;
-  placesVisited: number;
-  distanceWalkedKm: number;
-  achievementsUnlocked: number;
-  longestStreakDays: number;
   currentStreakDays: number;
+  placesVisited?: number;
+  distanceWalkedKm?: number;
+  achievementsUnlocked?: number;
+  longestStreakDays?: number;
   xpToNextLevel?: number;
 }
 

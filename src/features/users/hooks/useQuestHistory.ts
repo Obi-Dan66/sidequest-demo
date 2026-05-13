@@ -14,10 +14,11 @@ const toResult = (page: PaginatedResponse<QuestHistoryItemDto>): UseQuestHistory
   pagination: page.pagination,
 });
 
-export const useMyQuestHistory = (query: QuestHistoryQuery = { limit: 10 }) =>
+export const useMyQuestHistory = (query: QuestHistoryQuery = { limit: 10 }, enabled = true) =>
   useQuery<UseQuestHistoryResult, ApiError>({
     queryKey: queryKeys.users.myHistory(query),
     queryFn: async () => toResult(await questHistoryApi.myHistory(query)),
+    enabled,
     retry: false,
   });
 

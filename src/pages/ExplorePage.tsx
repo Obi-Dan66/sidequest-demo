@@ -11,23 +11,44 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, MapPin } from 'lucide-react';
-import { useQuests } from '@/features/quests/hooks/useQuests';
+import { useNearbyQuests } from '@/features/quests/hooks/useQuests';
 import { siteConfig } from '@/config/site';
+import { env } from '@/config/env';
 import { type Quest, type QuestCategory } from '@/types/quest';
 import { questCategoryMap } from '@/lib/categories';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/config/routes';
+
+const NEARBY_RADIUS_M = 10_000;
 
 const ExplorePage = () => {
   const [category, setCategory] = useState<QuestCategory | 'all'>('all');
   const [search, setSearch] = useState('');
   const [selectedQuestId, setSelectedQuestId] = useState<string | undefined>();
 
-  const { data, isLoading } = useQuests({
-    categorySlug: category === 'all' ? undefined : category,
-    search: search.trim() || undefined,
+  const nearbyCategorySlug =
+    category === 'all' ? undefined : category === 'food' ? 'cafes' : category;
+
+  const nearbyQuery = useNearbyQuests({
+    lat: env.map.defaultLat,
+    lng: env.map.defaultLng,
+    radiusM: NEARBY_RADIUS_M,
+    categorySlug: nearbyCategorySlug,
   });
-  const quests = useMemo(() => data?.quests ?? [], [data?.quests]);
+
+  const quests = useMemo(() => {
+    const raw = nearbyQuery.data ?? [];
+    const q = search.trim().toLowerCase();
+    if (!q) return raw;
+    return raw.filter(
+      (quest) =>
+        quest.title.toLowerCase().includes(q) ||
+        quest.summary.toLowerCase().includes(q) ||
+        quest.tags.some((tag) => tag.toLowerCase().includes(q)),
+    );
+  }, [nearbyQuery.data, search]);
+
+  const isLoading = nearbyQuery.isPending;
 
   const markers: MapMarker[] = useMemo(
     () =>
@@ -50,8 +71,10 @@ const ExplorePage = () => {
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight">Explore</h1>
             <p className="text-sm text-muted-foreground">
-              <MapPin className="inline size-3.5" /> {siteConfig.primaryCity.name} · {quests.length}{' '}
-              quests on the board
+              <MapPin className="inline size-3.5" /> {siteConfig.primaryCity.name} ·{' '}
+              {isLoading
+                ? '…'
+                : `${quests.length} quests within ~${Math.round(NEARBY_RADIUS_M / 1000)} km of map center`}
             </p>
           </div>
         </div>
@@ -95,7 +118,7 @@ const ExplorePage = () => {
       <section className="flex flex-col gap-3">
         <SectionHeader
           title="Nearby quests"
-          subtitle="Within a 20-minute walk of central Prague."
+          subtitle={`Within ~${Math.round(NEARBY_RADIUS_M / 1000)} km of ${siteConfig.primaryCity.name} map center (server-ranked by distance).`}
         />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading

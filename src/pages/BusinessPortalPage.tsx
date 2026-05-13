@@ -202,7 +202,7 @@ const BusinessPortalPage = () => {
                       Live
                     </Badge>
                   ) : (
-                    <Badge variant="outline">Sample</Badge>
+                    <Badge variant="outline">Preview</Badge>
                   )}
                 </div>
 
